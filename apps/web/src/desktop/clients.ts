@@ -24,6 +24,7 @@ function toml(value: string): string {
   return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
+/** Cursor's install link carries the server entry as base64 JSON. */
 function encodeConfig(value: unknown): string {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   let binary = '';
@@ -61,7 +62,8 @@ export function clientSetups(launch: AssistantLaunch, platform: 'win' | 'mac' | 
       title: 'GitHub Copilot',
       note: 'In VS Code, run MCP: Open User Configuration and add redcolumn under servers. That file is your user profile, so Copilot Chat can use it in every workspace. Do not put it in a project’s .vscode/mcp.json.',
       copy: JSON.stringify(copilot, null, 2),
-      href: `https://vscode.dev/redirect/mcp/install?name=redcolumn&config=${encodeURIComponent(encodeConfig(vscodeConfig))}`,
+      // VS Code reads `config` as URL-encoded JSON, not base64 like Cursor.
+      href: `https://vscode.dev/redirect/mcp/install?name=redcolumn&config=${encodeURIComponent(JSON.stringify(vscodeConfig))}`,
       hrefLabel: 'Add to VS Code',
     },
     {

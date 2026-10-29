@@ -470,9 +470,13 @@ test('each client starts the bundled Node program', () => {
   assert.deepEqual(config.args, launch.args);
   assert.equal(config.env, undefined);
   assert.equal(config.command, launch.command);
+  // VS Code decodes `config` as plain JSON (searchParams already URL-decodes it); base64 would not parse.
   const vscode = new URL(clients[0]!.href!);
-  const vscodeConfig = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(decodeURIComponent(vscode.searchParams.get('config') ?? '')), (c) => c.charCodeAt(0)))) as { type: string };
+  const vscodeConfig = JSON.parse(vscode.searchParams.get('config') ?? '') as { type: string; command: string; args: string[]; env?: unknown };
   assert.equal(vscodeConfig.type, 'stdio');
+  assert.equal(vscodeConfig.command, launch.command);
+  assert.deepEqual(vscodeConfig.args, launch.args);
+  assert.equal(vscodeConfig.env, undefined);
 });
 
 test('a development launch still passes ELECTRON_RUN_AS_NODE through', () => {
